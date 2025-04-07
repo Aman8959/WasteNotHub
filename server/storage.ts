@@ -4,6 +4,11 @@ import {
   agents, type Agent, type InsertAgent,
   donations, type Donation, type InsertDonation
 } from "@shared/schema";
+import session from "express-session";
+import connectPg from "connect-pg-simple";
+import MemoryStore from "memorystore";
+import { db } from './db';
+import { eq } from 'drizzle-orm';
 
 // Interface for all CRUD operations
 export interface IStorage {
@@ -29,6 +34,9 @@ export interface IStorage {
   // Donation operations
   getDonations(): Promise<Donation[]>;
   createDonation(donation: InsertDonation): Promise<Donation>;
+  
+  // Session store
+  sessionStore: session.Store;
 }
 
 // In-memory storage implementation
@@ -41,6 +49,7 @@ export class MemStorage implements IStorage {
   private productId: number;
   private agentId: number;
   private donationId: number;
+  sessionStore: session.Store;
 
   constructor() {
     this.users = new Map();
@@ -51,6 +60,12 @@ export class MemStorage implements IStorage {
     this.productId = 1;
     this.agentId = 1;
     this.donationId = 1;
+    
+    // Create memory session store
+    const MemorySessionStore = MemoryStore(session);
+    this.sessionStore = new MemorySessionStore({
+      checkPeriod: 86400000 // prune expired entries every 24h
+    });
     
     // Initialize with sample data
     this.seedSampleData();
@@ -239,4 +254,104 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+const MemorySessionStore = MemoryStore(session);
+
+export class DatabaseStorage implements IStorage {
+  sessionStore: session.Store;
+
+  constructor() {
+    // Use memory session store for now
+    this.sessionStore = new MemorySessionStore({
+      checkPeriod: 86400000 // prune expired entries every 24h
+    });
+    
+    // When using Postgres for sessions:
+    // this.sessionStore = new PostgresSessionStore({
+    //   conObject: {
+    //     connectionString: process.env.DATABASE_URL,
+    //   },
+    //   createTableIfMissing: true,
+    // });
+  }
+
+  async getUser(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
+  }
+  
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user;
+  }
+  
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user;
+  }
+  
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const [user] = await db.insert(users).values(insertUser).returning();
+    return user;
+  }
+  
+  async getProducts(): Promise<Product[]> {
+    return await db.select().from(products);
+  }
+  
+  async getProductById(id: number): Promise<Product | undefined> {
+    const [product] = await db.select().from(products).where(eq(products.id, id));
+    return product;
+  }
+  
+  async getProductsByCategory(category: string): Promise<Product[]> {
+    return await db.select().from(products).where(eq(products.category, category));
+  }
+  
+  async createProduct(insertProduct: InsertProduct): Promise<Product> {
+    const [product] = await db.insert(products).values({
+      ...insertProduct, 
+      is_available: true
+    }).returning();
+    return product;
+  }
+  
+  async updateProduct(id: number, productUpdate: Partial<Product>): Promise<Product | undefined> {
+    const [product] = await db
+      .update(products)
+      .set(productUpdate)
+      .where(eq(products.id, id))
+      .returning();
+    return product;
+  }
+  
+  async deleteProduct(id: number): Promise<boolean> {
+    const result = await db.delete(products).where(eq(products.id, id));
+    return !!result;
+  }
+  
+  async getAgents(): Promise<Agent[]> {
+    return await db.select().from(agents);
+  }
+  
+  async getAgentById(id: number): Promise<Agent | undefined> {
+    const [agent] = await db.select().from(agents).where(eq(agents.id, id));
+    return agent;
+  }
+  
+  async createAgent(insertAgent: InsertAgent): Promise<Agent> {
+    const [agent] = await db.insert(agents).values(insertAgent).returning();
+    return agent;
+  }
+  
+  async getDonations(): Promise<Donation[]> {
+    return await db.select().from(donations);
+  }
+  
+  async createDonation(insertDonation: InsertDonation): Promise<Donation> {
+    const [donation] = await db.insert(donations).values(insertDonation).returning();
+    return donation;
+  }
+}
+
+// Use Database storage
+export const storage = new DatabaseStorage();

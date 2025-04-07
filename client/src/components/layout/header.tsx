@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { useAuth } from "@/lib/auth";
+import { useAuth } from "@/hooks/use-auth";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,11 +8,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { User, LogOut, Menu } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { User, LogOut, Menu, Settings, Package } from "lucide-react";
 
 const Header = () => {
   const [location] = useLocation();
-  const { user, logout, isAuthenticated } = useAuth();
+  const { user, logoutMutation } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const toggleMobileMenu = () => {
@@ -52,32 +53,57 @@ const Header = () => {
               </Link>
             ))}
             
-            {isAuthenticated ? (
+            {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="p-0 text-white">
-                    <User className="h-5 w-5 mr-2" />
-                    <span className="font-heading font-medium">{user?.username}</span>
+                    <Avatar className="h-8 w-8 mr-2">
+                      <AvatarImage src={`https://avatar.vercel.sh/${user.username}`} alt={user.username} />
+                      <AvatarFallback>{user.username.substring(0, 2).toUpperCase()}</AvatarFallback>
+                    </Avatar>
+                    <span className="font-heading font-medium">{user.username}</span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="bg-gray-800 border-gray-700">
-                  <DropdownMenuItem onClick={logout} className="text-white hover:bg-gray-700">
+                  <DropdownMenuItem asChild className="text-white hover:bg-gray-700">
+                    <Link href="/profile">
+                      <User className="h-4 w-4 mr-2" />
+                      प्रोफाइल
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild className="text-white hover:bg-gray-700">
+                    <Link href="/products">
+                      <Package className="h-4 w-4 mr-2" />
+                      प्रोडक्ट्स
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild className="text-white hover:bg-gray-700">
+                    <Link href="/settings">
+                      <Settings className="h-4 w-4 mr-2" />
+                      सेटिंग्स
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={() => logoutMutation.mutate()} 
+                    className="text-white hover:bg-gray-700"
+                    disabled={logoutMutation.isPending}
+                  >
                     <LogOut className="h-4 w-4 mr-2" />
-                    Logout
+                    {logoutMutation.isPending ? "लॉग आउट हो रहा है..." : "लॉग आउट"}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
               <>
                 <Link 
-                  href="/login"
+                  href="/auth"
                   className="font-heading font-medium text-gray-400 hover:text-white transition"
                 >
-                  Login
+                  लॉगिन
                 </Link>
-                <Link href="/signup">
+                <Link href="/auth">
                   <Button className="font-heading font-medium bg-gray-800 text-white hover:bg-gray-700">
-                    Sign Up
+                    रजिस्टर
                   </Button>
                 </Link>
               </>
@@ -113,33 +139,44 @@ const Header = () => {
               </Link>
             ))}
             
-            {isAuthenticated ? (
-              <Button 
-                variant="ghost" 
-                className="w-full justify-start p-2 font-heading font-medium text-white"
-                onClick={() => {
-                  logout();
-                  setMobileMenuOpen(false);
-                }}
-              >
-                <LogOut className="h-4 w-4 mr-2" />
-                Logout
-              </Button>
+            {user ? (
+              <>
+                <Link
+                  href="/profile"
+                  className="block py-2 font-heading font-medium text-gray-400 hover:text-white flex items-center"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <User className="h-4 w-4 mr-2" />
+                  प्रोफाइल
+                </Link>
+                <Button 
+                  variant="ghost" 
+                  className="w-full justify-start p-2 font-heading font-medium text-white"
+                  onClick={() => {
+                    logoutMutation.mutate();
+                    setMobileMenuOpen(false);
+                  }}
+                  disabled={logoutMutation.isPending}
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  {logoutMutation.isPending ? "लॉग आउट हो रहा है..." : "लॉग आउट"}
+                </Button>
+              </>
             ) : (
               <>
                 <Link
-                  href="/login"
+                  href="/auth"
                   className="block py-2 font-heading font-medium text-gray-400 hover:text-white"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  Login
+                  लॉगिन
                 </Link>
                 <Link
-                  href="/signup"
+                  href="/auth"
                   className="block py-2 font-heading font-medium text-center bg-gray-800 text-white rounded hover:bg-gray-700 mt-2"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  Sign Up
+                  रजिस्टर
                 </Link>
               </>
             )}

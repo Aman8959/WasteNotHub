@@ -1,69 +1,27 @@
-import express, { type Express, Request, Response } from "express";
+import express, { type Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { 
-  insertUserSchema, 
   insertProductSchema, 
   insertAgentSchema, 
   insertDonationSchema 
 } from "@shared/schema";
 import { ZodError } from "zod";
+import { setupAuth } from "./auth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Setup authentication
+  setupAuth(app);
+  
   const router = express.Router();
-
-  // Auth routes
-  router.post("/auth/register", async (req: Request, res: Response) => {
-    try {
-      const userData = insertUserSchema.parse(req.body);
-      
-      // Check if username already exists
-      const existingUser = await storage.getUserByUsername(userData.username);
-      if (existingUser) {
-        return res.status(400).json({ message: "Username already taken" });
-      }
-      
-      // Check if email already exists
-      const existingEmail = await storage.getUserByEmail(userData.email);
-      if (existingEmail) {
-        return res.status(400).json({ message: "Email already registered" });
-      }
-      
-      const newUser = await storage.createUser(userData);
-      
-      // Don't return the password
-      const { password, ...userWithoutPassword } = newUser;
-      res.status(201).json(userWithoutPassword);
-    } catch (error) {
-      if (error instanceof ZodError) {
-        res.status(400).json({ message: "Invalid input data", errors: error.errors });
-      } else {
-        res.status(500).json({ message: "Server error" });
-      }
+  
+  // Auth middleware
+  const isAuthenticated = (req: Request, res: Response, next: NextFunction) => {
+    if (req.isAuthenticated()) {
+      return next();
     }
-  });
-
-  router.post("/auth/login", async (req: Request, res: Response) => {
-    try {
-      const { username, password } = req.body;
-      
-      if (!username || !password) {
-        return res.status(400).json({ message: "Username and password are required" });
-      }
-      
-      const user = await storage.getUserByUsername(username);
-      
-      if (!user || user.password !== password) {
-        return res.status(401).json({ message: "Invalid credentials" });
-      }
-      
-      // Don't return the password
-      const { password: _, ...userWithoutPassword } = user;
-      res.status(200).json(userWithoutPassword);
-    } catch (error) {
-      res.status(500).json({ message: "Server error" });
-    }
-  });
+    return res.status(401).json({ message: "इसके लिए लॉगिन करना जरूरी है" });
+  };
 
   // Product routes
   router.get("/products", async (_req: Request, res: Response) => {
@@ -95,7 +53,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  router.post("/products", async (req: Request, res: Response) => {
+  router.post("/products", isAuthenticated, async (req: Request, res: Response) => {
     try {
       const productData = insertProductSchema.parse(req.body);
       const newProduct = await storage.createProduct(productData);
@@ -109,7 +67,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  router.put("/products/:id", async (req: Request, res: Response) => {
+  router.put("/products/:id", isAuthenticated, async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id);
       
@@ -130,7 +88,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  router.delete("/products/:id", async (req: Request, res: Response) => {
+  router.delete("/products/:id", isAuthenticated, async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id);
       
@@ -181,7 +139,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  router.post("/agents", async (req: Request, res: Response) => {
+  router.post("/agents", isAuthenticated, async (req: Request, res: Response) => {
     try {
       const agentData = insertAgentSchema.parse(req.body);
       const newAgent = await storage.createAgent(agentData);
@@ -205,7 +163,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  router.post("/donations", async (req: Request, res: Response) => {
+  router.post("/donations", isAuthenticated, async (req: Request, res: Response) => {
     try {
       const donationData = insertDonationSchema.parse(req.body);
       const newDonation = await storage.createDonation(donationData);
