@@ -91,7 +91,12 @@ export class MemStorage implements IStorage {
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.userId++;
     const created_at = new Date();
-    const user: User = { ...insertUser, id, created_at };
+    const user: User = { 
+      ...insertUser, 
+      id, 
+      created_at,
+      name: insertUser.name || null
+    };
     this.users.set(id, user);
     return user;
   }
@@ -290,7 +295,10 @@ export class DatabaseStorage implements IStorage {
   }
   
   async createUser(insertUser: InsertUser): Promise<User> {
-    const [user] = await db.insert(users).values(insertUser).returning();
+    const [user] = await db.insert(users).values({
+      ...insertUser,
+      name: insertUser.name || null
+    }).returning();
     return user;
   }
   
@@ -310,7 +318,9 @@ export class DatabaseStorage implements IStorage {
   async createProduct(insertProduct: InsertProduct): Promise<Product> {
     const [product] = await db.insert(products).values({
       ...insertProduct, 
-      is_available: true
+      is_available: true,
+      donor_id: insertProduct.donor_id || null,
+      image_url: insertProduct.image_url || null
     }).returning();
     return product;
   }
@@ -339,7 +349,13 @@ export class DatabaseStorage implements IStorage {
   }
   
   async createAgent(insertAgent: InsertAgent): Promise<Agent> {
-    const [agent] = await db.insert(agents).values(insertAgent).returning();
+    const [agent] = await db.insert(agents).values({
+      ...insertAgent,
+      image_url: insertAgent.image_url || null,
+      rating: insertAgent.rating || null,
+      bio: insertAgent.bio || null,
+      user_id: insertAgent.user_id || null
+    }).returning();
     return agent;
   }
   
@@ -348,7 +364,10 @@ export class DatabaseStorage implements IStorage {
   }
   
   async createDonation(insertDonation: InsertDonation): Promise<Donation> {
-    const [donation] = await db.insert(donations).values(insertDonation).returning();
+    const [donation] = await db.insert(donations).values({
+      ...insertDonation,
+      message: insertDonation.message || null
+    }).returning();
     return donation;
   }
 }

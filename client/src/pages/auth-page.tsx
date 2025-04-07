@@ -19,14 +19,14 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Recycle } from "lucide-react";
 
 const loginSchema = z.object({
-  username: z.string().min(1, "नाम आवश्यक है"),
-  password: z.string().min(6, "पासवर्ड कम से कम 6 अक्षर का होना चाहिए"),
+  username: z.string().min(1, "Username is required"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
 const registerSchema = z.object({
-  username: z.string().min(3, "नाम कम से कम 3 अक्षर का होना चाहिए"),
-  email: z.string().email("सही ईमेल आईडी दर्ज करें"),
-  password: z.string().min(6, "पासवर्ड कम से कम 6 अक्षर का होना चाहिए"),
+  username: z.string().min(3, "Username must be at least 3 characters"),
+  email: z.string().email("Please enter a valid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
   name: z.string().optional(),
 });
 
@@ -76,8 +76,8 @@ export default function AuthPage() {
         <div className="order-2 md:order-1">
           <Card className="w-full max-w-md mx-auto dark:bg-gray-900">
             <CardHeader className="space-y-1 text-center">
-              <CardTitle className="text-2xl font-bold">वेस्टनॉट में आपका स्वागत है</CardTitle>
-              <CardDescription>नीचे अपने अकाउंट में लॉगिन करें या नया अकाउंट बनाएं</CardDescription>
+              <CardTitle className="text-2xl font-bold">Welcome to WasteNot</CardTitle>
+              <CardDescription>Login to your account or create a new one below</CardDescription>
             </CardHeader>
             <CardContent>
               <Tabs 
@@ -86,8 +86,8 @@ export default function AuthPage() {
                 className="w-full"
               >
                 <TabsList className="grid w-full grid-cols-2 mb-6">
-                  <TabsTrigger value="login">लॉगिन</TabsTrigger>
-                  <TabsTrigger value="register">रजिस्टर</TabsTrigger>
+                  <TabsTrigger value="login">Login</TabsTrigger>
+                  <TabsTrigger value="register">Register</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="login">
@@ -98,10 +98,10 @@ export default function AuthPage() {
                         name="username"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>यूजरनेम</FormLabel>
+                            <FormLabel>Username</FormLabel>
                             <FormControl>
                               <Input 
-                                placeholder="आपका यूजरनेम" 
+                                placeholder="Your username" 
                                 disabled={loginMutation.isPending} 
                                 {...field} 
                               />
@@ -115,11 +115,11 @@ export default function AuthPage() {
                         name="password"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>पासवर्ड</FormLabel>
+                            <FormLabel>Password</FormLabel>
                             <FormControl>
                               <Input 
                                 type="password" 
-                                placeholder="आपका पासवर्ड" 
+                                placeholder="Your password" 
                                 disabled={loginMutation.isPending} 
                                 {...field} 
                               />
@@ -133,7 +133,7 @@ export default function AuthPage() {
                         className="w-full" 
                         disabled={loginMutation.isPending}
                       >
-                        {loginMutation.isPending ? "लॉगिन हो रहा है..." : "लॉगिन करें"}
+                        {loginMutation.isPending ? "Logging in..." : "Login"}
                       </Button>
                     </form>
                   </Form>
@@ -147,10 +147,10 @@ export default function AuthPage() {
                         name="username"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>यूजरनेम</FormLabel>
+                            <FormLabel>Username</FormLabel>
                             <FormControl>
                               <Input 
-                                placeholder="एक यूनिक यूजरनेम चुनें" 
+                                placeholder="Choose a unique username" 
                                 disabled={registerMutation.isPending} 
                                 {...field} 
                               />
@@ -164,11 +164,11 @@ export default function AuthPage() {
                         name="email"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>ईमेल</FormLabel>
+                            <FormLabel>Email</FormLabel>
                             <FormControl>
                               <Input 
                                 type="email" 
-                                placeholder="आपका ईमेल एड्रेस" 
+                                placeholder="Your email address" 
                                 disabled={registerMutation.isPending} 
                                 {...field} 
                               />
@@ -182,10 +182,10 @@ export default function AuthPage() {
                         name="name"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>नाम (वैकल्पिक)</FormLabel>
+                            <FormLabel>Name (Optional)</FormLabel>
                             <FormControl>
                               <Input 
-                                placeholder="आपका पूरा नाम" 
+                                placeholder="Your full name" 
                                 disabled={registerMutation.isPending} 
                                 {...field} 
                               />
@@ -199,11 +199,11 @@ export default function AuthPage() {
                         name="password"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>पासवर्ड</FormLabel>
+                            <FormLabel>Password</FormLabel>
                             <FormControl>
                               <Input 
                                 type="password" 
-                                placeholder="पासवर्ड (कम से कम 6 अक्षर)" 
+                                placeholder="Password (at least 6 characters)" 
                                 disabled={registerMutation.isPending} 
                                 {...field} 
                               />
@@ -217,7 +217,7 @@ export default function AuthPage() {
                         className="w-full" 
                         disabled={registerMutation.isPending}
                       >
-                        {registerMutation.isPending ? "अकाउंट बन रहा है..." : "रजिस्टर करें"}
+                        {registerMutation.isPending ? "Creating account..." : "Register"}
                       </Button>
                     </form>
                   </Form>
@@ -227,8 +227,8 @@ export default function AuthPage() {
             <CardFooter className="flex justify-center">
               <p className="text-sm text-muted-foreground text-center">
                 {activeTab === "login" 
-                  ? "अकाउंट नहीं है? ऊपर 'रजिस्टर' टैब पर क्लिक करें।" 
-                  : "पहले से अकाउंट है? ऊपर 'लॉगिन' टैब पर क्लिक करें।"}
+                  ? "Don't have an account? Click the 'Register' tab above." 
+                  : "Already have an account? Click the 'Login' tab above."}
               </p>
             </CardFooter>
           </Card>
@@ -236,9 +236,9 @@ export default function AuthPage() {
         
         <div className="order-1 md:order-2 p-6 bg-muted rounded-lg flex flex-col items-center text-center">
           <Recycle className="h-16 w-16 mb-6 text-primary" />
-          <h2 className="text-3xl font-bold mb-4">वेस्टनॉट के साथ अपशिष्ट को कम करें</h2>
+          <h2 className="text-3xl font-bold mb-4">Reduce Waste with WasteNot</h2>
           <p className="text-muted-foreground mb-6">
-            अनुपयोगी वस्तुओं को दान करके और जरूरतमंदों के लिए संसाधनों का पुन: उपयोग करके हम मिलकर पर्यावरण का बचाव कर सकते हैं।
+            By donating unused items and repurposing resources for those in need, we can work together to protect the environment.
           </p>
           <div className="space-y-4 text-left w-full max-w-md">
             <div className="flex items-start">
@@ -246,9 +246,9 @@ export default function AuthPage() {
                 <Recycle className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <h3 className="font-medium">अनुपयोगी वस्तुओं को साझा करें</h3>
+                <h3 className="font-medium">Share Unused Items</h3>
                 <p className="text-sm text-muted-foreground">
-                  आपके पुराने सामान किसी और के लिए उपयोगी हो सकते हैं। उन्हें फेंकने के बजाय हमारे प्लेटफॉर्म पर शेयर करें।
+                  Your old items could be useful to someone else. Instead of throwing them away, share them on our platform.
                 </p>
               </div>
             </div>
@@ -257,9 +257,9 @@ export default function AuthPage() {
                 <Recycle className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <h3 className="font-medium">जरूरतमंद लोगों तक पहुंचाएं</h3>
+                <h3 className="font-medium">Reach Those in Need</h3>
                 <p className="text-sm text-muted-foreground">
-                  हमारे एजेंट्स वितरण में मदद करते हैं, यह सुनिश्चित करते हुए कि आपका दान वहां पहुंचे जहां इसकी सबसे ज्यादा जरूरत है।
+                  Our agents help with distribution, ensuring your donations reach where they are needed most.
                 </p>
               </div>
             </div>
@@ -268,9 +268,9 @@ export default function AuthPage() {
                 <Recycle className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <h3 className="font-medium">पर्यावरण को बचाएं</h3>
+                <h3 className="font-medium">Save the Environment</h3>
                 <p className="text-sm text-muted-foreground">
-                  हर दान किए गए आइटम के साथ, आप अपशिष्ट को कम करते हैं और एक अधिक टिकाऊ कल का निर्माण करते हैं।
+                  With each item donated, you reduce waste and contribute to building a more sustainable tomorrow.
                 </p>
               </div>
             </div>

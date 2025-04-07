@@ -76,12 +76,12 @@ export function setupAuth(app: Express) {
       // Check if user already exists
       const existingUser = await storage.getUserByUsername(username);
       if (existingUser) {
-        return res.status(400).json({ error: "यूजरनेम पहले से मौजूद है" });
+        return res.status(400).json({ error: "Username already exists" });
       }
       
       const existingEmail = await storage.getUserByEmail(email);
       if (existingEmail) {
-        return res.status(400).json({ error: "ईमेल पहले से मौजूद है" });
+        return res.status(400).json({ error: "Email already exists" });
       }
 
       // Create the user with hashed password
@@ -100,7 +100,7 @@ export function setupAuth(app: Express) {
       });
     } catch (error) {
       console.error("Registration error:", error);
-      return res.status(500).json({ error: "रजिस्ट्रेशन में एरर हुआ है" });
+      return res.status(500).json({ error: "Error during registration" });
     }
   });
 
@@ -108,7 +108,7 @@ export function setupAuth(app: Express) {
     passport.authenticate("local", (err: Error | null, user: Express.User | false, info: any) => {
       if (err) return next(err);
       if (!user) {
-        return res.status(401).json({ error: "गलत यूजरनेम या पासवर्ड" });
+        return res.status(401).json({ error: "Invalid username or password" });
       }
       req.login(user, (err: Error | null) => {
         if (err) return next(err);
@@ -126,7 +126,7 @@ export function setupAuth(app: Express) {
 
   app.get("/api/user", (req, res) => {
     if (!req.user) {
-      return res.status(401).json({ error: "उपयोगकर्ता लॉग्ड इन नहीं है" });
+      return res.status(401).json({ error: "User is not logged in" });
     }
     res.json(req.user);
   });
