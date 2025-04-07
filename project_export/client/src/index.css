@@ -1,0 +1,49 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-black text-white;
+  }
+
+  .bg-primary {
+    @apply bg-black;
+  }
+
+  .hover\:bg-primary-dark:hover {
+    @apply hover:bg-gray-900;
+  }
+
+  .text-primary {
+    @apply text-white;
+  }
+
+  .border-primary {
+    @apply border-white;
+  }
+
+  /* Card modifications for dark theme */
+  .card, .bg-white, .bg-neutral-50 {
+    @apply bg-gray-900 text-white;
+  }
+
+  /* Text modifications for dark theme */
+  .text-neutral-800, .text-neutral-600, .text-neutral-500, .text-neutral-400 {
+    @apply text-gray-300;
+  }
+
+  /* Form input modifications for dark theme */
+  input, textarea, select {
+    @apply bg-gray-800 text-white border-gray-700;
+  }
+
+  /* Button modifications */
+  .btn-primary, button[type="submit"] {
+    @apply bg-gray-800 text-white hover:bg-gray-700;
+  }
+}
